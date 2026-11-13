@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="LatestNews.API/LatestNews.API.csproj" Id="be1e0b39-2a0c-4ea8-82cf-6520dda9ee5d" />
+  <Project Path="LatestNews.Application/LatestNews.Application.csproj" />
+  <Project Path="LatestNews.Core/LatestNews.Core.csproj" />
+  <Project Path="LatestNews.Infrastructure/LatestNews.Infrastructure.csproj" />
+</Solution>
