@@ -1,17 +1,28 @@
 ﻿@LatestNews.API_HostAddress = http://localhost:5221
-@ArticleId = a7100000-0000-4000-8000-000000000001
+@ArticleId = A7100000-0000-4000-8000-000000000002
 
-GET {{LatestNews.API_HostAddress}}/weatherforecast/
+### Create article
+
+POST {{LatestNews.API_HostAddress}}/api/articles
 Accept: application/json
+Content-Type: application/x-www-form-urlencoded
 
-###
+Title=Technology%20and%20education&Theme=technology%20in%20education&Category=Technology&Image=https%3A%2F%2Fexample.com%2Farticle.jpg&GenerateAudio=false
+
+### Get all articles
 
 GET {{LatestNews.API_HostAddress}}/api/articles
 Accept: application/json
 
-###
+### Get article by id
 
 GET {{LatestNews.API_HostAddress}}/api/articles/{{ArticleId}}
 Accept: application/json
 
-###
+### Update article by id
+PUT {{LatestNews.API_HostAddress}}/api/articles/{{ArticleId}}
+Accept: application/json
+
+### Delete article by id
+DELETE {{LatestNews.API_HostAddress}}/api/articles/{{ArticleId}}
+Accept: application/json

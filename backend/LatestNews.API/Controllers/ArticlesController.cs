@@ -1,7 +1,12 @@
-﻿using LatestNews.Application.Queries.ArticleQueries.GetAllArticle;
+﻿using LatestNews.Application.Commands.ArticleCommands.CreateArticle;
+using LatestNews.Application.Commands.ArticleCommands.DeleteArticle;
+using LatestNews.Application.Commands.ArticleCommands.UpdateArticle;
+using LatestNews.Application.Commands.ArticleCommands.UpdateArticleLevel;
+using LatestNews.Application.Queries.ArticleQueries.GetAllArticle;
 using LatestNews.Application.Queries.ArticleQueries.GetArticleById;
 using LatestNews.Application.ViewModels;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,10 +23,10 @@ namespace LatestNews.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ArticleViewModel>> GetById(Guid id, CancellationToken cancellationToken)
+        public async Task<ActionResult<ArticleViewModel>> GetById(Guid id)
         {
             var query = new GetArticleByIdQuery(id);
-            var result = await _mediator.Send(query, cancellationToken);
+            var result = await _mediator.Send(query);
 
             if (result == null)
                 return NotFound();
@@ -36,6 +41,51 @@ namespace LatestNews.API.Controllers
 
             var articles = await _mediator.Send(query);
             return Ok(articles);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromForm] CreateArticleCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPut("{articleId}/levels/{levelId}")]
+        public async Task<IActionResult> UpdateLevel(Guid articleId, Guid levelId, [FromBody] UpdateArticleLevelCommand command)
+        {
+            command.ArticleId = articleId;
+            command.LevelId = levelId;
+
+            var result = await _mediator.Send(command);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateArticle(Guid id, [FromForm] UpdateArticleCommand command)
+        {
+            command.Id = id;
+            var result = await _mediator.Send(command);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteArticle(Guid id)
+        {
+            var query = new DeleteArticleCommand(id);
+
+            var result = await _mediator.Send(query);
+            if (!result)
+                return NotFound();
+            
+            return NoContent();
         }
     }
 }

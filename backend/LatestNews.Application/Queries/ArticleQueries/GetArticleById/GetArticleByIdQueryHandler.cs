@@ -15,7 +15,7 @@ namespace LatestNews.Application.Queries.ArticleQueries.GetArticleById
 
         public async Task<ArticleViewModel?> Handle(GetArticleByIdQuery request, CancellationToken cancellationToken)
         {
-            var article = await _articleRepository.GetByIdAsync(request.Id, cancellationToken);
+            var article = await _articleRepository.GetByIdAsync(request.Id);
             if (article == null)
                 return null;
 
