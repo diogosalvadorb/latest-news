@@ -14,5 +14,5 @@ export interface Article {
 }
 
 export type ArticlesResult =
-  | { status: "success" | "demo"; articles: Article[] }
+  | { status: "success"; articles: Article[] }
   | { status: "error"; articles: Article[] };

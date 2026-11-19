@@ -1,7 +1,6 @@
 import "server-only";
 import { cache } from "react";
 import type { Article, ArticlesResult } from "@/lib/articles";
-import { demoArticles } from "./demo-articles";
 
 interface ApiArticle {
   id: string;
@@ -48,7 +47,7 @@ function toArticle(article: ApiArticle, endpoint: URL): Article {
 
 export const getArticleById = cache(async (id: string): Promise<Article | null> => {
   const baseUrl = process.env.API_BASE_URL;
-  if (!baseUrl) return demoArticles.find((article) => article.id === id) ?? null;
+  if (!baseUrl) throw new Error("API_BASE_URL is not configured");
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
 
   const endpoint = new URL(`${baseUrl.replace(/\/$/, "")}/api/Articles/${encodeURIComponent(id)}`);
@@ -62,7 +61,7 @@ export const getArticleById = cache(async (id: string): Promise<Article | null> 
 
 export async function getArticles(): Promise<ArticlesResult> {
   const baseUrl = process.env.API_BASE_URL;
-  if (!baseUrl) return { status: "demo", articles: demoArticles };
+  if (!baseUrl) return { status: "error", articles: [] };
 
   try {
     const endpoint = new URL(`${baseUrl.replace(/\/$/, "")}/api/Articles`);
