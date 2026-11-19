@@ -1,0 +1,30 @@
+﻿using LatestNews.Core.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace LatestNews.Infrastructure.Persistence.Configuration
+{
+    public class ArticleConfiguration : IEntityTypeConfiguration<Article>
+    {
+        public void Configure(EntityTypeBuilder<Article> builder)
+        {
+            builder.Property(a => a.Title)
+                   .IsRequired()
+                   .HasMaxLength(200);
+
+            builder.Property(a => a.ImageUrl)
+                   .HasMaxLength(500);
+
+            builder.HasMany(a => a.Levels)
+                .WithOne(l => l.Article!)
+                .HasForeignKey(l => l.ArticleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(a => a.Levels)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+        }
+    }
+}
