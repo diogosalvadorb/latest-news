@@ -1,15 +1,14 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { Article } from "@/lib/articles";
 import { Icon } from "./icon";
 
 export function ArticleCard({
   article,
   priority,
-  onRead,
 }: {
   article: Article;
   priority: boolean;
-  onRead: (article: Article) => void;
 }) {
   return (
     <article className="story">
@@ -56,26 +55,20 @@ export function ArticleCard({
             </time>
           </div>
           <h2>
-            <button className="story-title" onClick={() => onRead(article)}>
+            <Link className="story-title" href={`/articles/${encodeURIComponent(article.id)}`}>
               {article.title}
-            </button>
+            </Link>
           </h2>
         </div>
         <p className="story-description">{article.description}</p>
         <div className="story-bottom">
-          <button
+          <Link
             className="btn"
-            onClick={() => onRead(article)}
+            href={`/articles/${encodeURIComponent(article.id)}`}
             aria-label={`Read article: ${article.title}`}
           >
             Read article <Icon name="arrow" />
-          </button>
-          <span className="audio-meta">
-            {article.hasAudio && <Icon name="headphones" />}
-            {article.levels.length}{" "}
-            {article.levels.length === 1 ? "level" : "levels"}
-            {article.hasAudio && " · Audio"}
-          </span>
+          </Link>
         </div>
       </div>
     </article>

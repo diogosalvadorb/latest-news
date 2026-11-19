@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { Article, ArticlesResult } from "@/lib/articles";
 import { demoArticles } from "./demo-articles";
 
@@ -30,6 +31,35 @@ function isApiArticle(value: unknown): value is ApiArticle {
   );
 }
 
+function toArticle(article: ApiArticle, endpoint: URL): Article {
+  const levels = [...article.levels].sort((a, b) => a.level - b.level);
+  return {
+    id: article.id,
+    title: article.title,
+    description: levels.find((level) => level.level === 1)?.text ?? levels[0]?.text ?? "",
+    createdAt: article.createdAt,
+    imageUrl: article.imageUrl ? new URL(article.imageUrl, endpoint).href : null,
+    imageAlt: article.title,
+    category: article.category.trim() || null,
+    hasAudio: false,
+    levels,
+  };
+}
+
+export const getArticleById = cache(async (id: string): Promise<Article | null> => {
+  const baseUrl = process.env.API_BASE_URL;
+  if (!baseUrl) return demoArticles.find((article) => article.id === id) ?? null;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
+
+  const endpoint = new URL(`${baseUrl.replace(/\/$/, "")}/api/Articles/${encodeURIComponent(id)}`);
+  const response = await fetch(endpoint, { cache: "no-store", signal: AbortSignal.timeout(8000) });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error("Unable to load article");
+  const payload: unknown = await response.json();
+  if (!isApiArticle(payload) || payload.id.toLowerCase() !== id.toLowerCase()) throw new Error("Invalid article response");
+  return toArticle(payload, endpoint);
+});
+
 export async function getArticles(): Promise<ArticlesResult> {
   const baseUrl = process.env.API_BASE_URL;
   if (!baseUrl) return { status: "demo", articles: demoArticles };
@@ -44,22 +74,7 @@ export async function getArticles(): Promise<ArticlesResult> {
     const payload: unknown = await response.json();
     if (!Array.isArray(payload) || !payload.every(isApiArticle))
       throw new Error("Invalid articles response");
-    const articles: Article[] = payload.map((article) => ({
-      id: article.id,
-      title: article.title,
-      description:
-        article.levels.find((level) => level.level === 1)?.text ??
-        article.levels[0]?.text ??
-        "",
-      createdAt: article.createdAt,
-      imageUrl: article.imageUrl
-        ? new URL(article.imageUrl, endpoint).href
-        : null,
-      imageAlt: article.title,
-      category: article.category.trim() || null,
-      hasAudio: false,
-      levels: article.levels,
-    }));
+    const articles = payload.map((article) => toArticle(article, endpoint));
     return { status: "success", articles };
   } catch {
     return { status: "error", articles: [] };

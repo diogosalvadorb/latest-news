@@ -10,7 +10,7 @@ npm run dev
 ## Organização
 
 - `app/page.tsx`: Server Component que compõe a home.
-- `app/_components/`: componentes exclusivos da home; estado no cliente apenas para busca, filtros e prévia.
+- `app/_components/`: componentes exclusivos da home; estado no cliente apenas para busca e filtros.
 - `app/globals.css`: estilos e tokens compartilhados, com medidas em rem.
 - `data/articles.ts`: consulta server-side à API .NET, validação do retorno e adaptação para a interface.
 - `data/demo-articles.ts`: conteúdo da referência usado quando não existe configuração de API.
@@ -44,7 +44,7 @@ Sem `API_BASE_URL`, a home apresenta os cinco artigos da referência. A busca fu
 
 ## Escopo desta etapa
 
-A home inclui cabeçalho, busca, filtros, cards, guia de leitura, temas na lateral e rodapé. “Read article” abre uma prévia acessível em diálogo nativo; quando conectado à API, permite alternar entre os textos dos níveis retornados. Os dados de demonstração possuem somente o resumo do design. Reprodução de áudio, página completa do artigo e área administrativa ficam para as próximas etapas; o botão administrativo permanece desabilitado.
+A home inclui cabeçalho, busca, filtros, cards, guia de leitura, temas na lateral e rodapé. O título e “Read article” navegam para `/articles/{id}`. A página é um Server Component que consulta `GET /api/Articles/{id}` em `data/articles.ts`, com componentes específicos em `app/articles/[id]/_components/`. Basic e Advanced exibem os textos retornados pelo backend; também há ajuste de fonte. IDs inválidos ou ausentes mostram a página de artigo não encontrado; falhas da API mostram erro com opção de tentar novamente. O player de áudio é apenas visual, com botões desativados e sem reprodução, busca de arquivo de áudio ou síntese de voz. A área administrativa continua fora desta etapa. Os dados de demonstração possuem somente o resumo do design.
 
 ```sh
 npm run lint

@@ -1,4 +1,5 @@
-@LatestNews.API_HostAddress = http://localhost:5221
+﻿@LatestNews.API_HostAddress = http://localhost:5221
+@ArticleId = a7100000-0000-4000-8000-000000000001
 
 GET {{LatestNews.API_HostAddress}}/weatherforecast/
 Accept: application/json
@@ -6,6 +7,11 @@ Accept: application/json
 ###
 
 GET {{LatestNews.API_HostAddress}}/api/articles
+Accept: application/json
+
+###
+
+GET {{LatestNews.API_HostAddress}}/api/articles/{{ArticleId}}
 Accept: application/json
 
 ###

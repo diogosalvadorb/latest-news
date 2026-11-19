@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { Article, ArticlesResult } from "@/lib/articles";
+import type { ArticlesResult } from "@/lib/articles";
 import { ArticleCard } from "./article-card";
-import { ArticlePreview } from "./article-preview";
 import { ReadingGuide } from "./reading-guide";
 import { Icon } from "./icon";
 
 export function ArticleFeed({ result }: { result: ArticlesResult }) {
   const [category, setCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Article | null>(null);
   const query = search.trim().toLocaleLowerCase();
   const articles = result.articles.filter((article) =>
     (category === null || category === article.category) &&
@@ -35,8 +33,7 @@ export function ArticleFeed({ result }: { result: ArticlesResult }) {
         </div>
         <div className="search">
           <Icon name="search" />
-          <label htmlFor="article-search">Search articles</label>
-          <input id="article-search" type="search" placeholder="Search articles" value={search} onChange={(event) => setSearch(event.target.value)} />
+          <input id="article-search" type="search" aria-label="Search articles" placeholder="Search articles" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
       </div>
       <div className="layout">
@@ -58,7 +55,6 @@ export function ArticleFeed({ result }: { result: ArticlesResult }) {
                 key={article.id}
                 article={article}
                 priority={index === 0}
-                onRead={setSelected}
               />
             ))
           ) : (
@@ -112,13 +108,6 @@ export function ArticleFeed({ result }: { result: ArticlesResult }) {
           )}
         </aside>
       </div>
-      {selected && (
-        <ArticlePreview
-          key={selected.id}
-          article={selected}
-          onClose={() => setSelected(null)}
-        />
-      )}
     </section>
   );
 }

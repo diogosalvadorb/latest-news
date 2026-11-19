@@ -1,4 +1,6 @@
 ﻿using LatestNews.Application.Queries.ArticleQueries.GetAllArticle;
+using LatestNews.Application.Queries.ArticleQueries.GetArticleById;
+using LatestNews.Application.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +15,18 @@ namespace LatestNews.API.Controllers
         public ArticlesController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ArticleViewModel>> GetById(Guid id, CancellationToken cancellationToken)
+        {
+            var query = new GetArticleByIdQuery(id);
+            var result = await _mediator.Send(query, cancellationToken);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
         }
 
         [HttpGet]
