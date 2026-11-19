@@ -16,6 +16,19 @@ builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddMediatR(typeof(GetAllArticlesQuery));
 builder.Services.AddOpenApi();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowNext", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,6 +37,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseCors("AllowNext");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
