@@ -17,7 +17,6 @@ input:focus, textarea:focus, select:focus { border-color: var(--p-accent); outli
 .skip { position: fixed; left: 1.25rem; top: -6.25rem; background: var(--p-accent); color: var(--p-bg); padding: 0.75rem 1.25rem; z-index: 99; }
 .skip:focus { top: 0.625rem; }
 .wrap { width: min(78rem, 100% - 6rem); margin-inline: auto; }
-.home-main { padding-top: 2rem; }
 .header { height: 5.5rem; border-bottom: 0.0625rem solid var(--line); background: rgba(8, 20, 27, 0.96); }
 .header > .wrap { height: 100%; display: flex; align-items: center; justify-content: space-between; }
 .logo { display: inline-flex; align-items: center; gap: 0.625rem; font-size: 1.9375rem; letter-spacing: -0.125rem; line-height: 1; font-weight: 600; }
@@ -133,7 +132,6 @@ button:disabled:hover { transform: none; }
 @media (max-width: 39.9375rem) {
   .wrap { width: calc(100% - 2.5rem); }
   .header { height: 4.75rem; }
-  .home-main { padding-top: 1.25rem; }
   .logo { font-size: 1.8125rem; }
   .logo .logo-symbol { width: 1.5625rem; }
   .nav { gap: 0; }
@@ -172,3 +170,17 @@ button:disabled:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; border-top: 0.0625rem solid var(--line); border-bottom: 0.0625rem solid var(--line); padding: 1.125rem 0rem; margin-bottom: 1.875rem; }
+.search { position: relative; display: flex; align-items: center; }
+.search .ico { position: absolute; left: 0.875rem; color: var(--p-muted); }
+.search input { padding-left: 2.6875rem; font-size: 0.875rem; width: 16.875rem; }
+.search label { position: absolute; left: .75rem; top: -.625rem; background: var(--p-bg); padding-inline: .3125rem; font-size: .75rem; line-height: 1.125rem; color: var(--p-muted); }
+@media(max-width:60rem){.toolbar{flex-wrap:wrap}}
+@media(max-width:39.9375rem){
+  .toolbar { flex-direction: column-reverse; flex-wrap: nowrap; align-items: stretch; gap: .75rem; padding: .625rem 0 1.0625rem; border-top: 0; margin-bottom: 1.25rem; }
+  .toolbar > * { min-width: 0; max-width: 100%; }
+  .search input { width: 100%; font-size: 1rem; min-height: 3rem; }
+}
+
+.home-main { padding-top: 2rem; }
+@media(max-width:39.9375rem){.home-main{padding-top:1.25rem}}

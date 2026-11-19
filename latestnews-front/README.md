@@ -10,7 +10,7 @@ npm run dev
 ## Organização
 
 - `app/page.tsx`: Server Component que compõe a home.
-- `app/_components/`: componentes exclusivos da home; estado no cliente apenas para temas da lateral e prévia.
+- `app/_components/`: componentes exclusivos da home; estado no cliente apenas para busca, filtros e prévia.
 - `app/globals.css`: estilos e tokens compartilhados, com medidas em rem.
 - `data/articles.ts`: consulta server-side à API .NET, validação do retorno e adaptação para a interface.
 - `data/demo-articles.ts`: conteúdo da referência usado quando não existe configuração de API.
@@ -21,15 +21,15 @@ Sem Server Actions e sem shadcn. A consulta usa `fetch` no servidor; não é nec
 
 ## API .NET
 
-Para conectar aos dados reais, copie `.env.example` para `.env.local` e defina:
+A instalação local já está configurada em `.env.local` para consumir a API .NET. Para configurar outro ambiente, copie `.env.example` para `.env.local` e defina:
 
 ```dotenv
-API_BASE_URL=http://localhost:5221
+API_BASE_URL=https://localhost:7014
 ```
 
 Reinicie o Next.js. A home consulta `GET /api/Articles` a cada requisição, com timeout de oito segundos. A origem permanece no servidor, sem exigir CORS no navegador. Não inclua `/api` na variável.
 
-No ambiente local deste projeto, a API redireciona HTTP para HTTPS com certificado de desenvolvimento .NET. Com Node 24, habilite os certificados já confiáveis do Windows antes de iniciar o frontend:
+Use Node.js 24. Os comandos `npm run dev` e `npm start` usam `--use-system-ca` para confiar nos certificados já confiáveis do Windows, incluindo o certificado de desenvolvimento .NET. Não é necessário desativar a validação HTTPS. Alternativamente, ao iniciar o Next.js diretamente:
 
 ```powershell
 $env:NODE_USE_SYSTEM_CA = "1"
@@ -38,13 +38,13 @@ npm run dev
 
 Isso mantém a validação HTTPS ativa. O certificado precisa estar previamente confiável no Windows. Em produção, utilize a origem HTTPS da API com um certificado público válido.
 
-Contrato atual: `id`, `title`, `imageUrl`, `createdAt`, `levels: [{ id, level, text }]`. O primeiro nível fornece o resumo da listagem. Categorias e áudio ainda não existem nesse contrato e não são inventados para artigos reais. Uma falha da API mostra erro com opção de tentar novamente; uma lista vazia mostra o estado vazio, sem substituir os resultados por dados de demonstração.
+Contrato atual: `id`, `title`, `category`, `imageUrl`, `createdAt`, `levels: [{ id, level, text }]`. O primeiro nível fornece o resumo da listagem. Categorias são strings livres vindas do backend; os filtros são gerados a partir dos valores retornados. Categoria vazia não gera filtro. O contrato ainda não expõe áudio. Uma falha da API mostra erro com opção de tentar novamente; uma lista vazia mostra o estado vazio, sem substituir os resultados por dados de demonstração.
 
-Sem `API_BASE_URL`, a home apresenta os cinco artigos da referência. Os temas da lateral filtram a listagem; clicar novamente no tema selecionado restaura todos os artigos.
+Sem `API_BASE_URL`, a home apresenta os cinco artigos da referência. A busca funciona junto com a categoria selecionada. “All articles” remove o filtro de categoria e “Clear filters” limpa a busca e a categoria. Em telas pequenas, todos os temas ficam acessíveis por rolagem horizontal.
 
 ## Escopo desta etapa
 
-A home inclui cabeçalho, cards, guia de leitura, temas na lateral e rodapé. “Read article” abre uma prévia acessível em diálogo nativo; quando conectado à API, permite alternar entre os textos dos níveis retornados. Os dados de demonstração possuem somente o resumo do design. Reprodução de áudio, página completa do artigo e área administrativa ficam para as próximas etapas; o botão administrativo permanece desabilitado.
+A home inclui cabeçalho, busca, filtros, cards, guia de leitura, temas na lateral e rodapé. “Read article” abre uma prévia acessível em diálogo nativo; quando conectado à API, permite alternar entre os textos dos níveis retornados. Os dados de demonstração possuem somente o resumo do design. Reprodução de áudio, página completa do artigo e área administrativa ficam para as próximas etapas; o botão administrativo permanece desabilitado.
 
 ```sh
 npm run lint

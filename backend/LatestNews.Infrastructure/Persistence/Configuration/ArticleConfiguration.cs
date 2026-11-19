@@ -15,6 +15,10 @@ namespace LatestNews.Infrastructure.Persistence.Configuration
                    .IsRequired()
                    .HasMaxLength(200);
 
+            builder.Property(a => a.Category)
+                   .IsRequired()
+                   .HasMaxLength(100);
+
             builder.Property(a => a.ImageUrl)
                    .HasMaxLength(500);
 

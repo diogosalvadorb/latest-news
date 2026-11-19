@@ -5,6 +5,7 @@ import { demoArticles } from "./demo-articles";
 interface ApiArticle {
   id: string;
   title: string;
+  category: string;
   imageUrl: string | null;
   createdAt: string;
   levels: { id: string; level: number; text: string }[];
@@ -16,6 +17,7 @@ function isApiArticle(value: unknown): value is ApiArticle {
   return (
     typeof item.id === "string" &&
     typeof item.title === "string" &&
+    typeof item.category === "string" &&
     typeof item.createdAt === "string" &&
     !Number.isNaN(Date.parse(item.createdAt)) &&
     (item.imageUrl == null || typeof item.imageUrl === "string") &&
@@ -54,8 +56,7 @@ export async function getArticles(): Promise<ArticlesResult> {
         ? new URL(article.imageUrl, endpoint).href
         : null,
       imageAlt: article.title,
-      // The current .NET response does not expose category or audio metadata.
-      category: null,
+      category: article.category.trim() || null,
       hasAudio: false,
       levels: article.levels,
     }));

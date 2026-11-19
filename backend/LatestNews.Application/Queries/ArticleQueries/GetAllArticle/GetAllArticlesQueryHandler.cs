@@ -22,6 +22,7 @@ namespace LatestNews.Application.Queries.ArticleQueries.GetAllArticle
             {
                 Id = article.Id,
                 Title = article.Title,
+                Category = article.Category,
                 ImageUrl = article.ImageUrl,
                 CreatedAt = article.CreatedAt,
                 Levels = article.Levels.Select(level => new ArticleLevelViewModel
