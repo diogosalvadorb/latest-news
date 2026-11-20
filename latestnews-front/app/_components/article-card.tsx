@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Article } from "@/lib/articles";
@@ -10,15 +13,17 @@ export function ArticleCard({
   article: Article;
   priority: boolean;
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
   return (
     <article className="story">
       <div className="cover">
-        {article.imageUrl ? (
+        {article.imageUrl && !imageFailed ? (
           <Image
             src={article.imageUrl}
             alt={article.imageAlt}
             fill
             sizes="(max-width: 639px) 88px, (max-width: 1190px) 155px, 196px"
+            onError={() => setImageFailed(true)}
             priority={priority}
             unoptimized={!article.imageUrl.startsWith("/")}
           />
@@ -28,7 +33,7 @@ export function ArticleCard({
               article.illustration === "moon" ? "moon-art" : "chip-art"
             }
             role="img"
-            aria-label={article.imageAlt}
+            aria-label={article.imageAlt || "Article illustration"}
           >
             {article.illustration !== "moon" && (
               <div className="chip">
@@ -55,8 +60,11 @@ export function ArticleCard({
             </time>
           </div>
           <h2>
-            <Link className="story-title" href={`/articles/${encodeURIComponent(article.id)}`}>
-              {article.title}
+            <Link
+              className="story-title"
+              href={`/articles/${encodeURIComponent(article.id)}`}
+            >
+              {article.title || "Untitled article"}
             </Link>
           </h2>
         </div>
@@ -65,7 +73,7 @@ export function ArticleCard({
           <Link
             className="btn"
             href={`/articles/${encodeURIComponent(article.id)}`}
-            aria-label={`Read article: ${article.title}`}
+            aria-label={`Read article: ${article.title || "Untitled article"}`}
           >
             Read article <Icon name="arrow" />
           </Link>

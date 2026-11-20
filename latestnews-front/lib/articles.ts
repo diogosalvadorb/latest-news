@@ -16,3 +16,13 @@ export interface Article {
 export type ArticlesResult =
   | { status: "success"; articles: Article[] }
   | { status: "error"; articles: Article[] };
+
+export type PagedArticlesResult = {
+  status: "success" | "error";
+  articles: Article[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  categories: string[];
+};

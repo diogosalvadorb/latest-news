@@ -99,3 +99,68 @@ export async function getArticles(): Promise<ArticlesResult> {
     return { status: "error", articles: [] };
   }
 }
+
+export async function getPagedArticles(
+  page: number,
+  search: string,
+  category: string,
+): Promise<import("@/lib/articles").PagedArticlesResult> {
+  const empty = {
+    status: "error" as const,
+    articles: [],
+    page,
+    pageSize: 6,
+    totalCount: 0,
+    totalPages: 0,
+    categories: [],
+  };
+  const baseUrl = process.env.API_BASE_URL;
+  if (!baseUrl) return empty;
+  try {
+    const endpoint = new URL(
+      `${baseUrl.replace(/\/$/, "")}/api/Articles/paged`,
+    );
+    endpoint.searchParams.set("page", String(page));
+    endpoint.searchParams.set("pageSize", "6");
+    if (search) endpoint.searchParams.set("search", search);
+    if (category) endpoint.searchParams.set("category", category);
+    const response = await fetch(endpoint, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) throw new Error("Unable to load articles");
+    const payload = (await response.json()) as Record<string, unknown>;
+    if (
+      !payload ||
+      !Array.isArray(payload.items) ||
+      !payload.items.every(isApiArticle) ||
+      ![
+        payload.page,
+        payload.pageSize,
+        payload.totalCount,
+        payload.totalPages,
+      ].every(
+        (value) =>
+          typeof value === "number" &&
+          Number.isSafeInteger(value) &&
+          value >= 0,
+      ) ||
+      (payload.page as number) < 1 ||
+      payload.pageSize !== 6 ||
+      !Array.isArray(payload.categories) ||
+      !payload.categories.every((value) => typeof value === "string")
+    )
+      throw new Error("Invalid paged articles response");
+    return {
+      status: "success",
+      articles: payload.items.map((article) => toArticle(article, endpoint)),
+      page: payload.page as number,
+      pageSize: 6,
+      totalCount: payload.totalCount as number,
+      totalPages: payload.totalPages as number,
+      categories: payload.categories as string[],
+    };
+  } catch {
+    return empty;
+  }
+}

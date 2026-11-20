@@ -1,4 +1,5 @@
-﻿using LatestNews.Application.Commands.ArticleCommands.CreateArticle;
+using LatestNews.Application.Queries.ArticleQueries.GetPagedArticles;
+using LatestNews.Application.Commands.ArticleCommands.CreateArticle;
 using LatestNews.Application.Commands.ArticleCommands.DeleteArticle;
 using LatestNews.Application.Commands.ArticleCommands.UpdateArticle;
 using LatestNews.Application.Commands.ArticleCommands.UpdateArticleLevel;
@@ -43,6 +44,11 @@ namespace LatestNews.API.Controllers
             return Ok(articles);
         }
 
+        [HttpGet("paged")]
+        public async Task<ActionResult<PagedArticlesViewModel>> GetPagedArticles([FromQuery] GetPagedArticlesQuery query, CancellationToken cancellationToken)
+        {
+            return Ok(await _mediator.Send(query, cancellationToken));
+        }
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateArticleCommand command)
         {

@@ -29,3 +29,15 @@ Title=Updated%20article&Category=Technology&BasicText=Simple%20article%20text.&A
 ### Delete article by id
 DELETE {{LatestNews.API_HostAddress}}/api/articles/{{ArticleId}}
 Accept: application/json
+
+### Get paginated articles (filters are applied before pagination)
+GET {{LatestNews.API_HostAddress}}/api/articles/paged?page=1&pageSize=6&search=&category=
+Accept: application/json
+
+### Get second page
+GET {{LatestNews.API_HostAddress}}/api/articles/paged?page=2&pageSize=6
+Accept: application/json
+
+### Invalid pagination returns 400
+GET {{LatestNews.API_HostAddress}}/api/articles/paged?page=0&pageSize=101
+Accept: application/json
