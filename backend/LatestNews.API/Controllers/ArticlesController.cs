@@ -1,4 +1,3 @@
-using LatestNews.Application.Queries.ArticleQueries.GetPagedArticles;
 using LatestNews.Application.Commands.ArticleCommands.CreateArticle;
 using LatestNews.Application.Commands.ArticleCommands.DeleteArticle;
 using LatestNews.Application.Commands.ArticleCommands.UpdateArticle;
@@ -7,8 +6,6 @@ using LatestNews.Application.Queries.ArticleQueries.GetAllArticle;
 using LatestNews.Application.Queries.ArticleQueries.GetArticleById;
 using LatestNews.Application.ViewModels;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LatestNews.API.Controllers
@@ -36,19 +33,20 @@ namespace LatestNews.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllArticles()
+        public async Task<IActionResult> GetAllArticles([FromQuery] string? search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 8)
         {
-            var query = new GetAllArticlesQuery();
+            var query = new GetAllArticlesQuery
+            {
+                SearchTerm = search,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
 
-            var articles = await _mediator.Send(query);
-            return Ok(articles);
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
         }
 
-        [HttpGet("paged")]
-        public async Task<ActionResult<PagedArticlesViewModel>> GetPagedArticles([FromQuery] GetPagedArticlesQuery query, CancellationToken cancellationToken)
-        {
-            return Ok(await _mediator.Send(query, cancellationToken));
-        }
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateArticleCommand command)
         {

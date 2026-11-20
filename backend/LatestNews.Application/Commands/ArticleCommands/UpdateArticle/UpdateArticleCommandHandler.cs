@@ -1,17 +1,20 @@
 ﻿using LatestNews.Application.Mapping;
-using LatestNews.Core.Entities;
 using LatestNews.Application.ViewModels;
 using LatestNews.Core.Repository;
 using MediatR;
+using LatestNews.Core.Service;
+using LatestNews.Application.Validators;
 
 namespace LatestNews.Application.Commands.ArticleCommands.UpdateArticle
 {
     public class UpdateArticleCommandHandler : IRequestHandler<UpdateArticleCommand, ArticleViewModel?>
     {
         private readonly IArticleRepository _articleRepository;
-        public UpdateArticleCommandHandler(IArticleRepository articleRepository)
+        private readonly IAiService _aiService;
+        public UpdateArticleCommandHandler(IArticleRepository articleRepository, IAiService aiService)
         {
             _articleRepository = articleRepository;
+            _aiService = aiService;
         }
 
         public async Task<ArticleViewModel?> Handle(UpdateArticleCommand request, CancellationToken cancellationToken)
@@ -20,21 +23,27 @@ namespace LatestNews.Application.Commands.ArticleCommands.UpdateArticle
             if (article == null)
                 return null;
 
-            article.UpdateTitle(request.Title.Trim());
-            if (request.Category != null) article.Category = request.Category.Trim();
-            if (request.RemoveImage) article.ImageUrl = null;
-            else if (!string.IsNullOrWhiteSpace(request.Image)) article.ImageUrl = request.Image;
-            foreach (var (number, text) in new[] { (1, request.BasicText), (2, request.AdvancedText) })
+            string? imageUrl = article.ImageUrl;
+
+            if (request.RemoveImage)
             {
-                if (text == null) continue;
-                var level = article.Levels.FirstOrDefault(item => item.Level == number);
-                if (level == null)
-                {
-                    level = new ArticleLevel { Id = Guid.NewGuid(), ArticleId = article.Id, Level = number };
-                    article.Levels.Add(level);
-                }
-                level.UpdateContent(text, level.AudioUrl);
+                imageUrl = null;
+
             }
+            else if (request.Image != null)
+            {
+                var validation = ImageValidator.ValidateImage(request.Image);
+                if (!validation.IsValid)
+                    throw new InvalidOperationException(validation.ErrorMessage);
+
+                var imageResult = await ImageValidator.ProcessImage(request.Image);
+
+                using var imageStream = new MemoryStream(imageResult.Data);
+                imageUrl = await _aiService.UploadImageAsync(imageStream, request.Image.FileName, imageResult.ContentType, request.Title);
+            }
+
+            article.UpdateTitle(request.Title);
+            article.UpdateImage(imageUrl);
 
             await _articleRepository.UpdateArticleAsync(article);
 

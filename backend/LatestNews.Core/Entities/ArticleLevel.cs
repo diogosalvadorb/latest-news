@@ -2,6 +2,16 @@
 {
     public class ArticleLevel
     {
+        public ArticleLevel(Guid articleId, int level, string text, string audioUrl, int wordCount)
+        {
+            Id = Guid.NewGuid();
+            ArticleId = articleId;
+            Level = ValidateLevel(level);
+            Text = ValidateText(text);
+            AudioUrl = audioUrl;
+            WordCount = wordCount;
+        }
+
         public Guid Id { get; set; }
         public Guid ArticleId { get; set; }
         public Article? Article { get; set; }
@@ -11,11 +21,47 @@
         public string AudioUrl { get; set; } = string.Empty;
         public int WordCount { get; set; }
 
+        public static ArticleLevel CreateBasic(Guid articleId, string text, string audioUrl)
+        {
+            return Create(articleId, ArticleGenerationRules.BasicLevel, text, audioUrl);
+        }
+
+        public static ArticleLevel CreateAdvanced(Guid articleId, string text, string audioUrl)
+        {
+            return Create(articleId, ArticleGenerationRules.AdvancedLevel, text, audioUrl);
+        }
+
+        public static ArticleLevel Create(Guid articleId, int level, string text, string audioUrl)
+        {
+            return new ArticleLevel(
+                articleId,
+                level,
+                text,
+                audioUrl,
+                ArticleGenerationRules.CountWords(text));
+        }
+
         public void UpdateContent(string text, string audioUrl)
         {
             Text = text;
-            WordCount = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+            WordCount = ArticleGenerationRules.CountWords(text);
             AudioUrl = audioUrl;
+        }
+
+        private static int ValidateLevel(int level)
+        {
+            if (!ArticleGenerationRules.IsSupportedLevel(level))
+                throw new ArgumentOutOfRangeException(nameof(level), "Unsupported article level.");
+
+            return level;
+        }
+
+        private static string ValidateText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                throw new ArgumentException("Article level text is required.", nameof(text));
+
+            return text.Trim();
         }
     }
 }

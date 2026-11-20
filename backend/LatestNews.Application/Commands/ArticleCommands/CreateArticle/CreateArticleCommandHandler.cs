@@ -1,6 +1,9 @@
+using LatestNews.Application.Mapping;
+using LatestNews.Application.Validators;
 using LatestNews.Application.ViewModels;
 using LatestNews.Core.Entities;
 using LatestNews.Core.Repository;
+using LatestNews.Core.Service;
 using MediatR;
 
 namespace LatestNews.Application.Commands.ArticleCommands.CreateArticle
@@ -8,85 +11,62 @@ namespace LatestNews.Application.Commands.ArticleCommands.CreateArticle
     public class CreateArticleCommandHandler : IRequestHandler<CreateArticleCommand, ArticleViewModel>
     {
         private readonly IArticleRepository _repository;
-        public CreateArticleCommandHandler(IArticleRepository repository)
+        private readonly IAiService _aiService;
+        public CreateArticleCommandHandler(IArticleRepository repository, IAiService aiService)
         {
             _repository = repository;
+            _aiService = aiService;
         }
 
         public async Task<ArticleViewModel> Handle(CreateArticleCommand request, CancellationToken cancellationToken)
         {
-            var article = new Article
-            {
-                Id = Guid.NewGuid(),
-                Title = request.Title.Trim(),
-                Category = request.Category.Trim(),
-                ImageUrl = request.Image,
-                CreatedAt = DateTime.UtcNow
-            };
+            string? imageUrl = null;
 
-            var basicText = GenerateOpenAIBasicText(request.Theme);
-            var advancedText = GenerateOpenAIAdvancedText(request.Theme);
-
-            article.Levels.Add(new ArticleLevel
+            if (request.Image != null)
             {
-                Id = Guid.NewGuid(),
-                ArticleId = article.Id,
-                Level = 1,
-                Text = basicText,
-                AudioUrl = string.Empty,
-                WordCount = CountWords(basicText)
-            });
+                var validation = ImageValidator.ValidateImage(request.Image);
+                if (!validation.IsValid)
+                {
+                    throw new InvalidOperationException(validation.ErrorMessage);
+                }
 
-            article.Levels.Add(new ArticleLevel
+                var imageResult = await ImageValidator.ProcessImage(request.Image);
+
+                using var imageStream = new MemoryStream(imageResult.Data);
+                imageUrl = await _aiService.UploadImageAsync(imageStream, request.Image.FileName, imageResult.ContentType, request.Title);
+            }
+
+            var basicTextTask = _aiService.GenerateAiArticleTextAsync(request.Theme, ArticleGenerationRules.BasicLevel);
+            var advancedTextTask = _aiService.GenerateAiArticleTextAsync(request.Theme, ArticleGenerationRules.AdvancedLevel);
+
+            var texts = await Task.WhenAll(basicTextTask, advancedTextTask);
+            var basicText = texts[0];
+            var advancedText = texts[1];
+
+            string basicAudio = string.Empty;
+            string advancedAudio = string.Empty;
+
+            if (request.GenerateAudio)
             {
-                Id = Guid.NewGuid(),
-                ArticleId = article.Id,
-                Level = 2,
-                Text = advancedText,
-                AudioUrl = string.Empty,
-                WordCount = CountWords(advancedText)
-            });
+                var basicAudioTask = _aiService.GenerateAudioAsync(basicText, request.Title, ArticleGenerationRules.BasicLevel);
+                var advancedAudioTask = _aiService.GenerateAudioAsync(advancedText, request.Title, ArticleGenerationRules.AdvancedLevel);
+
+                var audios = await Task.WhenAll(basicAudioTask, advancedAudioTask);
+                basicAudio = audios[0];
+                advancedAudio = audios[1];
+            }
+
+            var article = Article.CreateWithGeneratedLevels(
+                request.Title,
+                imageUrl,
+                basicText,
+                advancedText,
+                basicAudio,
+                advancedAudio);
 
             await _repository.CreateArticleAsync(article);
 
-            return new ArticleViewModel
-            {
-                Id = article.Id,
-                Title = article.Title,
-                Category = article.Category,
-                ImageUrl = article.ImageUrl,
-                CreatedAt = article.CreatedAt,
-                Levels = article.Levels.Select(l => new ArticleLevelViewModel
-                {
-                    Id = l.Id,
-                    Level = l.Level,
-                    Text = l.Text,
-                }).ToList()
-            };
-        }
-
-        private int CountWords(string text)
-        {
-            if (string.IsNullOrWhiteSpace(text))
-                return 0;
-
-            return text.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length;
-        }
-
-        private string GenerateOpenAIBasicText(string theme)
-        {
-            return $"This is a basic level article about {theme}. " +
-                   $"It uses simple words and short sentences. " +
-                   $"The vocabulary is easy to understand. " +
-                   $"This level is perfect for beginners learning English.";
-        }
-
-        private string GenerateOpenAIAdvancedText(string theme)
-        {
-            return $"This comprehensive article delves into the intricacies of {theme}. " +
-                   $"It employs sophisticated vocabulary and complex sentence structures. " +
-                   $"The content explores nuanced perspectives and demonstrates advanced linguistic patterns. " +
-                   $"This level challenges proficient English speakers to expand their understanding.";
-        }
+            return article.ToViewModel();
+        }  
     }
 }

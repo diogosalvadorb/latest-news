@@ -1,11 +1,12 @@
-﻿using LatestNews.Application.ViewModels;
+﻿using LatestNews.Application.Mapping;
+using LatestNews.Application.ViewModels;
 using LatestNews.Core.Repository;
 using MediatR;
 
 
 namespace LatestNews.Application.Queries.ArticleQueries.GetAllArticle
 {
-    public class GetAllArticlesQueryHandler : IRequestHandler<GetAllArticlesQuery, List<ArticleViewModel>>
+    public class GetAllArticlesQueryHandler : IRequestHandler<GetAllArticlesQuery, PaginatedResult<ArticleViewModel>>
     {
         private readonly IArticleRepository _articleRepository;
 
@@ -14,24 +15,48 @@ namespace LatestNews.Application.Queries.ArticleQueries.GetAllArticle
             _articleRepository = articleRepository;
         }
 
-        public async Task<List<ArticleViewModel>> Handle(GetAllArticlesQuery request, CancellationToken cancellationToken)
+        public async Task<PaginatedResult<ArticleViewModel>> Handle(GetAllArticlesQuery request, CancellationToken cancellationToken)
         {
-            var articles = await _articleRepository.GetAllArticlesAsync();
+            if (request.PageNumber < 1)
+                request.PageNumber = 1;
 
-            return articles.Select(article => new ArticleViewModel
+            if (request.PageSize < 1)
+                request.PageSize = 8;
+
+            if (request.PageSize > 100)
+                request.PageSize = 100;
+
+            var allArticles = await _articleRepository.GetAllArticlesAsync();
+
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                Id = article.Id,
-                Title = article.Title,
-                Category = article.Category,
-                ImageUrl = article.ImageUrl,
-                CreatedAt = article.CreatedAt,
-                Levels = article.Levels.Select(level => new ArticleLevelViewModel
-                {
-                    Id = level.Id,
-                    Level = level.Level,
-                    Text = level.Text,
-                }).ToList()
-            }).ToList();
+                allArticles = allArticles
+                    .Where(a => a.Title.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            allArticles = allArticles
+                .OrderByDescending(a => a.CreatedAt)
+                .ToList();
+
+            var totalCount = allArticles.Count;
+
+            var paginatedArticles = allArticles
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToList();
+
+            var articleViewModels = paginatedArticles
+                .Select(article => article.ToViewModel())
+                .ToList();
+
+            return new PaginatedResult<ArticleViewModel>
+            {
+                Items = articleViewModels,
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
         }
     }
 }
