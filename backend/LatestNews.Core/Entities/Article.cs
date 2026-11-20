@@ -10,7 +10,7 @@ namespace LatestNews.Core.Entities
         public string Category { get; set; } = string.Empty;
         public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }
-        public ICollection<ArticleLevel> Levels { get; set; } = new List<ArticleLevel>();
+        public ICollection<ArticleLevel> Levels => _levels;
 
         public ArticleLevel? GetLevel(Guid levelId)
         {

@@ -9,7 +9,9 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const article = await getArticleById(id);
-  return { title: article ? `${article.title} — news.` : "Article not found — news." };
+  return {
+    title: article ? `${article.title} — news.` : "Article not found — news.",
+  };
 }
 
 export default async function ArticlePage({ params }: Props) {

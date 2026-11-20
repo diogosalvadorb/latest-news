@@ -12,5 +12,25 @@ async function Articles() {
 }
 
 export default function Home() {
-  return <><a className="skip" href="#content">Skip to content</a><HomeHeader /><main id="content" className="wrap home-main"><h1 className="sr-only">Articles</h1><Suspense fallback={<div className="loading-feed" role="status">Loading articles…</div>}><Articles /></Suspense></main><HomeFooter /></>;
+  return (
+    <>
+      <a className="skip" href="#content">
+        Skip to content
+      </a>
+      <HomeHeader />
+      <main id="content" className="wrap home-main">
+        <h1 className="sr-only">Articles</h1>
+        <Suspense
+          fallback={
+            <div className="loading-feed" role="status">
+              Loading articles…
+            </div>
+          }
+        >
+          <Articles />
+        </Suspense>
+      </main>
+      <HomeFooter />
+    </>
+  );
 }

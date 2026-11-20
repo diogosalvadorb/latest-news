@@ -12,6 +12,7 @@ namespace LatestNews.Application.Mapping
             {
                 Id = article.Id,
                 Title = article.Title,
+                Category = article.Category,
                 ImageUrl = article.ImageUrl,
                 CreatedAt = article.CreatedAt,
                 Levels = article.Levels.Select(level => level.ToViewModel()).ToList()

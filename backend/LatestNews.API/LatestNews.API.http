@@ -1,4 +1,4 @@
-﻿@LatestNews.API_HostAddress = http://localhost:5221
+@LatestNews.API_HostAddress = http://localhost:5221
 @ArticleId = A7100000-0000-4000-8000-000000000002
 
 ### Create article
@@ -22,6 +22,9 @@ Accept: application/json
 ### Update article by id
 PUT {{LatestNews.API_HostAddress}}/api/articles/{{ArticleId}}
 Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+
+Title=Updated%20article&Category=Technology&BasicText=Simple%20article%20text.&AdvancedText=Detailed%20article%20text.
 
 ### Delete article by id
 DELETE {{LatestNews.API_HostAddress}}/api/articles/{{ArticleId}}

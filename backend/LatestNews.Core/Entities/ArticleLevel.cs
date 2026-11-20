@@ -14,6 +14,7 @@
         public void UpdateContent(string text, string audioUrl)
         {
             Text = text;
+            WordCount = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
             AudioUrl = audioUrl;
         }
     }

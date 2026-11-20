@@ -25,7 +25,11 @@ function isApiArticle(value: unknown): value is ApiArticle {
     item.levels.every((level: unknown) => {
       if (!level || typeof level !== "object") return false;
       const entry = level as Record<string, unknown>;
-      return typeof entry.level === "number" && typeof entry.text === "string";
+      return (
+        typeof entry.id === "string" &&
+        typeof entry.level === "number" &&
+        typeof entry.text === "string"
+      );
     })
   );
 }
@@ -35,9 +39,12 @@ function toArticle(article: ApiArticle, endpoint: URL): Article {
   return {
     id: article.id,
     title: article.title,
-    description: levels.find((level) => level.level === 1)?.text ?? levels[0]?.text ?? "",
+    description:
+      levels.find((level) => level.level === 1)?.text ?? levels[0]?.text ?? "",
     createdAt: article.createdAt,
-    imageUrl: article.imageUrl ? new URL(article.imageUrl, endpoint).href : null,
+    imageUrl: article.imageUrl
+      ? new URL(article.imageUrl, endpoint).href
+      : null,
     imageAlt: article.title,
     category: article.category.trim() || null,
     hasAudio: false,
@@ -45,19 +52,32 @@ function toArticle(article: ApiArticle, endpoint: URL): Article {
   };
 }
 
-export const getArticleById = cache(async (id: string): Promise<Article | null> => {
-  const baseUrl = process.env.API_BASE_URL;
-  if (!baseUrl) throw new Error("API_BASE_URL is not configured");
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
+export const getArticleById = cache(
+  async (id: string): Promise<Article | null> => {
+    const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) throw new Error("API_BASE_URL is not configured");
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    )
+      return null;
 
-  const endpoint = new URL(`${baseUrl.replace(/\/$/, "")}/api/Articles/${encodeURIComponent(id)}`);
-  const response = await fetch(endpoint, { cache: "no-store", signal: AbortSignal.timeout(8000) });
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error("Unable to load article");
-  const payload: unknown = await response.json();
-  if (!isApiArticle(payload) || payload.id.toLowerCase() !== id.toLowerCase()) throw new Error("Invalid article response");
-  return toArticle(payload, endpoint);
-});
+    const endpoint = new URL(
+      `${baseUrl.replace(/\/$/, "")}/api/Articles/${encodeURIComponent(id)}`,
+    );
+    const response = await fetch(endpoint, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error("Unable to load article");
+    const payload: unknown = await response.json();
+    if (!isApiArticle(payload) || payload.id.toLowerCase() !== id.toLowerCase())
+      throw new Error("Invalid article response");
+    return toArticle(payload, endpoint);
+  },
+);
 
 export async function getArticles(): Promise<ArticlesResult> {
   const baseUrl = process.env.API_BASE_URL;

@@ -9,7 +9,7 @@ export interface Article {
   imageUrl: string | null;
   imageAlt: string;
   illustration?: "chip" | "moon";
-  levels: { level: number; text: string }[];
+  levels: { id: string; level: number; text: string }[];
   hasAudio: boolean;
 }
 

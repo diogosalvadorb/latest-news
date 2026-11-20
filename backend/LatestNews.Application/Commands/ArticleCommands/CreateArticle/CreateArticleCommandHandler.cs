@@ -18,8 +18,8 @@ namespace LatestNews.Application.Commands.ArticleCommands.CreateArticle
             var article = new Article
             {
                 Id = Guid.NewGuid(),
-                Title = request.Title,
-                Category = request.Category,
+                Title = request.Title.Trim(),
+                Category = request.Category.Trim(),
                 ImageUrl = request.Image,
                 CreatedAt = DateTime.UtcNow
             };
@@ -53,6 +53,7 @@ namespace LatestNews.Application.Commands.ArticleCommands.CreateArticle
             {
                 Id = article.Id,
                 Title = article.Title,
+                Category = article.Category,
                 ImageUrl = article.ImageUrl,
                 CreatedAt = article.CreatedAt,
                 Levels = article.Levels.Select(l => new ArticleLevelViewModel
